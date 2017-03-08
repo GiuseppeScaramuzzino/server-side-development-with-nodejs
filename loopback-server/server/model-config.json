@@ -21,22 +21,26 @@
     "public": false
   },
   "ACL": {
-    "dataSource": "db",
+    "dataSource": "MongoDB",
     "public": false
   },
   "RoleMapping": {
-    "dataSource": "db",
+    "dataSource": "MongoDB",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "db",
+    "dataSource": "MongoDB",
     "public": false
   },
   "dishes": {
-    "dataSource": "db",
+    "dataSource": "MongoDB",
+    "public": true
+  },
+  "Customer": {
+    "dataSource": "MongoDB",
     "public": true
   }
 }
