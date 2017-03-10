@@ -23,7 +23,7 @@ var users = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
-var favoritiesRouter = require('./routes/favoritiesRouter');
+var favoritiesRouter = require('./routes/favoritesRouter');
 
 var app = express();
 // Secure traffic only
@@ -55,7 +55,7 @@ app.use('/users', users);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leadership',leaderRouter);
-app.use('/favoritiesRouter',favoritiesRouter);
+app.use('/favorities',favoritiesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
