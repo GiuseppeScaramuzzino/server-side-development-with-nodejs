@@ -55,7 +55,7 @@ app.use('/users', users);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leadership',leaderRouter);
-app.use('/favorities',favoritiesRouter);
+app.use('/favorites',favoritiesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

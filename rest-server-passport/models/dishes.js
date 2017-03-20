@@ -11,6 +11,10 @@ var commentSchema = new Schema({
         max: 5,
         required: true
     },
+    featured: {
+        type: Boolean,
+        default:false
+    },
     comment:  {
         type: String,
         required: true

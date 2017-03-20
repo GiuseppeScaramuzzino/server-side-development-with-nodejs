@@ -5,88 +5,84 @@ var mongoose = require('mongoose');
 var Favorites = require('../models/favorites');
 var Verify = require('./verify');
 
-var favoritiesRouter = express.Router();
-favoritiesRouter.use(bodyParser.json());
+var favoritesRouter = express.Router();
 
-favoritiesRouter.route('/')
+favoritesRouter.use(bodyParser.json());
+
+favoritesRouter.route('/')
     .all(Verify.verifyOrdinaryUser)
+    .get(function(req, res, next) {
 
-    .get(function (req, res, next) {
-        var user_id = req.decoded._doc._id;
-
-        Favorites.find({
-                "postedBy": user_id
-            })
+        Favorites.find({})
             .populate('postedBy')
             .populate('dishes')
-            .exec(function (err, fav) {
+            .exec(function(err, favorite) {
                 if (err) throw err;
-                res.json(fav);
-            });
+
+                res.json(favorite);
+            })
     })
+    .post(Verify.verifyAdmin, function(req, res, next) {
+        Favorites.findOne({ "postedBy": req.decoded._doc._id }, function(err, favorite) {
+            if (err) throw err;
 
-    .post(function (req, res, next) {
-        var newObj = {
-            postedBy: req.decoded._doc._id
-        };
+            if (favorite) {
 
-        Favorites.find({
-            "postedBy": req.decoded._doc._id
-        }, function (err, fav) {
-            if (fav != null && fav.length > 0) {
-                var index = fav[0].dishes.indexOf(req.body._id);
-                console.log(index);
-                if (index != -1) res.json(fav);
-                else {
-                    fav[0].dishes.push(req.body._id);
-                    fav[0].save(function (err, dish) {
-                        if (err) throw err;
-                        console.log('Updated Dishes!');
-                        res.json(fav);
-                    });
-                }
-            } else {
-                Favorites.create(newObj, function (err, fav) {
+                var dishId = req.body._id;
+                favorite.dishes.push(dishId);
+                favorite.save(function(err, favorite) {
                     if (err) throw err;
-                    console.log('Fav created!');
-                    fav.dishes.push(req.body._id);
-                    fav.save(function (err, dish) {
+                    res.json(favorite);
+                });
+
+            } else {
+                Favorites.create(req.body, function(err, favorite) {
+                    if (err) throw err;
+
+                    var dishId = req.body._id;
+
+                    favorite.postedBy = req.decoded._doc._id;
+                    favorite.dishes.push(dishId);
+
+                    favorite.save(function(err, favorite) {
                         if (err) throw err;
-                        console.log('Updated Dishes!');
-                        res.json(fav);
+                        res.json(favorite);
                     });
                 });
             }
-        });
+        })
+
     })
 
-    .delete(function (req, res, next) {
-        var user_id = req.decoded._doc._id;
-        Favorites.remove({
-            "postedBy": user_id
-        }, function (err, resp) {
-            if (err) throw err;
-            res.json(resp);
-        });
+.delete(Verify.verifyAdmin, function(req, res, next) {
+    Favorites.findOneAndRemove({"postedBy": req.decoded._doc._id}, function(err, favorite) {
+        if (err) throw err;
+        res.json(favorite);
     });
+});
 
-favoritiesRouter.route('/:dishObjectId')
+favoritesRouter.route('/:dishId')
     .all(Verify.verifyOrdinaryUser)
+    .delete(Verify.verifyAdmin, function(req, res, next) {
+        var dishId = req.params.dishId;
+        var postedById = req.decoded._doc._id;
 
-    .delete(function (req, res, next) {
-        var user_id = req.decoded._doc._id;
-        console.log(user_id);
-        Favorites.find({
-            "postedBy": user_id
-        }, function (err, fav) {
+        Favorites.findOne({ "postedBy": postedById }, function(err, favorite) {
             if (err) throw err;
-            var index = fav[0].dishes.indexOf(req.params.dishObjectId);
-            fav[0].dishes.splice(index, 1);
-            fav[0].save(function (err, resp) {
+
+            for (var i = (favorite.dishes.length - 1); i >= 0; i--) {
+                if (favorite.dishes[i] == dishId) {
+                    favorite.dishes.pull(dishId);
+                }
+            }
+
+            favorite.save(function(err, result) {
                 if (err) throw err;
-                res.json(resp);
+                res.json(favorite);
             });
         });
+
     });
 
-module.exports = favoritiesRouter;
+
+module.exports = favoritesRouter;
